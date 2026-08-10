@@ -1,0 +1,20 @@
+# Ignore Python internal cache files
+__pycache__/
+*.pyc
+
+# Ignore all local data and other select folders and scripts
+data/
+notebooks/
+obsolete/
+src/chapter1.py
+tests/chapter1_tests.py
+
+# Ignore common spreadsheet and data types
+*.csv
+*.xlsx
+*.h5
+*.pickle
+*.npy
+*.zip
+*.nc
+*.mat
