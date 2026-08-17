@@ -100,6 +100,7 @@ def initialize_model_state(model) -> None:
     spatial = model.spatial
     forcing = model.forcing
     state = model.state
+    step_vars = model.step_vars
 
     nx, ny = control.nx, control.ny
     mask = spatial.maskNaN
@@ -129,6 +130,15 @@ def initialize_model_state(model) -> None:
     state.snowdens = np.zeros((nx, ny), dtype=np.float64) * mask
     state.snowdepth = np.zeros((nx, ny), dtype=np.float64) * mask
     state.snowfrac = np.zeros((nx, ny), dtype=np.float64) * mask
+
+    # Initialize step variables
+    step_vars.albedo_out = spatial.albedo.copy()
+    step_vars.Tsurf_new = mask.copy()
+    step_vars.SWE_new = mask.copy()
+    step_vars.Td_new = mask.copy()
+    step_vars.snowdens_new = mask.copy()
+    step_vars.snowdepth_new = mask.copy()
+    step_vars.snowfrac_new = mask.copy()
 
 def record_initial_conditions_time_series(model) -> None:
     """Populates index 0 (t=0) of TimeSeriesOutputs with basin-averaged initial state values."""

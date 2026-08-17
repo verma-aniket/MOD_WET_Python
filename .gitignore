@@ -7,7 +7,8 @@ data/
 notebooks/
 obsolete/
 src/chapter1.py
-tests/chapter1_tests.py
+tests/
+plots/
 
 # Ignore common spreadsheet and data types
 *.csv

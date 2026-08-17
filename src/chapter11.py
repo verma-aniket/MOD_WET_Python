@@ -109,10 +109,6 @@ def routing_celerity_check(INFLOW_old: np.ndarray, INFLOW_new: np.ndarray, OUTFL
 
     # The coefficients below are based on the expression: Q=a*A^b, which is
     # given by Manning Equation.
-    # b=3/5;
-    # a=(n.*Pw.^(2/3)./sqrt(bed_slope)).^b;
-    # dQdA=1./(a.*b.*nominal_flow.^(b-1));
-    # celerity=dQdA; % (m/s)
 
     # Check velocity vs. space/time discretization:
     max_vel = float(np.nanmax(nominal_velocity))
@@ -124,7 +120,7 @@ def routing_celerity_check(INFLOW_old: np.ndarray, INFLOW_new: np.ndarray, OUTFL
 
     return dt_ratio
 
-# New version that is Python-based (2D row/col indices, C order)
+# New version that is based on 2D row/col tuples
 def routing_muskingum_cunge(INFLOW_old: np.ndarray, INFLOW_new: np.ndarray, OUTFLOW_old: np.ndarray, Iupstream: tuple[np.ndarray, np.ndarray], Idownstream: tuple[np.ndarray, np.ndarray],
                             mask: np.ndarray, n: np.ndarray, bed_slope: np.ndarray, dx: float, dt: float, width: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -225,7 +221,7 @@ def routing_muskingum_cunge(INFLOW_old: np.ndarray, INFLOW_new: np.ndarray, OUTF
 
     return NEW_INFLOWS, NEW_OUTFLOWS
 
-# Old MATLAB-based version that uses 1D linear indices and Fortran order
+# Old MATLAB version that uses 1D indices
 def routing_muskingum_cunge_old(INFLOW_old: np.ndarray, INFLOW_new: np.ndarray, OUTFLOW_old: np.ndarray, Iupstream: np.ndarray, Idownstream: np.ndarray, mask: np.ndarray, 
                             n: np.ndarray, bed_slope: np.ndarray, dx: float, dt: float, width: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """

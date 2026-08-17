@@ -80,7 +80,7 @@ def step_bare_soil_seb(model, maskSEB: np.ndarray, SW0: np.ndarray, Ta0: np.ndar
         model.time_series.snowdepth[ts_idx + 1] = float(np.nanmean(model.step_vars.snowdepth_new) / 1000.0)  # (m)
         model.time_series.snowdens[ts_idx + 1] = float(np.nanmean(model.step_vars.snowdens_new))  # (kg/m^3)
         model.time_series.snowfrac[ts_idx + 1] = float(np.nanmean(model.step_vars.snowfrac_new))  # (-)
-
+        
         model.time_series.Rn[ts_idx] = float(np.nanmean(model.step_vars.Rn_out))  # (W/m^2)
         model.time_series.LE[ts_idx] = float(np.nanmean(model.step_vars.LE_out))  # (W/m^2)
         model.time_series.H[ts_idx] = float(np.nanmean(model.step_vars.H_out))  # (W/m^2)
@@ -115,3 +115,4 @@ def step_bare_soil_seb(model, maskSEB: np.ndarray, SW0: np.ndarray, Ta0: np.ndar
     model.accumulators.cumulLE += model.step_vars.LE_out  # (W/m^2)
     model.accumulators.cumulH += model.step_vars.H_out  # (W/m^2)
     model.accumulators.cumulRlup += model.step_vars.Rlup_out  # (W/m^2)
+

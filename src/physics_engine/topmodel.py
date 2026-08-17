@@ -19,14 +19,14 @@ def step_topmodel(model, f: np.ndarray, ETsoil: np.ndarray) -> None:
     """
     # Call TOPMODEL and step through one time-step
     (
-        model.step_vars.Srz_new,
-        model.step_vars.Suz_new,
-        model.step_vars.SD_new,
-        model.step_vars.qv_new,
-        model.step_vars.qb_new,
-        model.step_vars.qse_new,
-        model.step_vars.Qv_new,
-        model.step_vars.Qb_new,
+        Srz_new,
+        Suz_new,
+        SD_new,
+        qv_new,
+        qb_new,
+        qse_new,
+        Qv_new,
+        Qb_new,
     ) = TOPMODEL(
         INFIL=f,
         ET=ETsoil,
@@ -45,3 +45,15 @@ def step_topmodel(model, f: np.ndarray, ETsoil: np.ndarray) -> None:
         K0=model.spatial.K0,
         dt=model.control.dt,
     )
+
+    # allocate topmodel results
+    model.step_vars.Srz_new = Srz_new
+    model.step_vars.Suz_new = Suz_new
+    model.step_vars.SD_new = SD_new
+    model.step_vars.qv_new = qv_new
+    model.step_vars.qb_new = qb_new
+    model.step_vars.qse_new = qse_new
+    model.step_vars.Qv_new = Qv_new # not used 
+    model.step_vars.Qb_new = Qb_new # not used
+
+    

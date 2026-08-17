@@ -1,4 +1,5 @@
 from pathlib import Path
+import numpy as np
 import xarray as xr
 import scipy.sparse as sp
 
@@ -27,7 +28,6 @@ def load_static_basin_data(file_path: str | Path, control, spatial, network, sha
     spatial.flowacc = ds['flowacc'].values
     spatial.mask = ds['mask'].values
     spatial.slope_deg = ds['slope'].values
-    spatial.SVF = ds['SVF'].values
 
     # load sparse matrix data
     flowdir_data = ds['flowdir_data'].values
@@ -38,12 +38,20 @@ def load_static_basin_data(file_path: str | Path, control, spatial, network, sha
     network.flowdir = sp.coo_matrix((flowdir_data, (flowdir_row, flowdir_col)), shape=flowdir_shape)
 
     # load (or not load) shade lookup table data based on calculation flag
-    if ds.shade_calc_flag == 1:
+    # Force shade flag to be False
+    shade_flag = ds.shade_calc_flag.copy()
+    shade_flag = False # comment/delete this to undo the forced shade flag
+    if shade_flag:
         shade.shade_calc_flag = True
         shade.shade_table = ds['shade_lookup_table'].values
         shade.azimuth = ds['azimuth'].values        
         shade.zenith = ds['zenith'].values
-        
+    else:
+        shade.shade_calc_flag = False
+        shade.shade_table = None
+        shade.azimuth = None
+        shade.zenith = None
+        spatial.SVF = np.where(spatial.mask == 1, 1.0, np.nan) # set SVF to 1.0 for all valid pixels (bypass shade calculation)
 
 def load_met_forcing_data(file_path: str | Path, forcing) -> None:
     """Read meteorologic forcing NetCDF file and populate forcing attributes directly."""
@@ -56,7 +64,7 @@ def load_met_forcing_data(file_path: str | Path, forcing) -> None:
     # Extract and load data
 
     # Time index
-    forcing.time = ds['time'].values
+    forcing.time = ds['time'].values # change to "elapased_days" when using Python data preprocessor
 
     # Gage Elevation
     forcing.gage_elev = ds.gage_elev

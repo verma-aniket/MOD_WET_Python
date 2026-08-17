@@ -3,11 +3,12 @@ import sys
 from pathlib import Path
 from tqdm import tqdm
 
-# # link core repo folder
-# SCRIPT_DIR = Path(__file__).resolve().parent
-# REPO_ROOT = SCRIPT_DIR.parent
-# if str(REPO_ROOT) not in sys.path:
-#     sys.path.append(str(REPO_ROOT))
+# To Do:
+# 1. update script to accept elapsed days instead of doy days
+# 2. save output with time encoding based on input data time stamps
+# 3. Once switched to elapsed days, need to correct DOY value in met_forcing.py, simply add one to convert elapsed days to DOY
+# 4. Test stream_pixels functionality
+# 5. Add special_pixels functionality script
 
 # import data containers & setup routines
 from src.model_setup.data_classes import (
@@ -69,7 +70,7 @@ class MODWETModel:
         self.time_series = TimeSeriesOutputs(nt=self.control.nt, nx=self.control.nx, ny=self.control.ny)
 
         # 5. Initialize state values
-        # Note: need to add record_special_pixel_initial_conditions to model_setup __init__ eventually...
+        # Note: need to add record_special_pixel_initial_conditions to model_setup __init__
         initialize_dynamic_model_states(self)
 
     def _load_data(self, basin_data_path: str | Path, met_forcing_path: str | Path) -> None:
@@ -90,7 +91,7 @@ class MODWETModel:
         t_map = 0
 
         # Main Simulation Loop
-        for t in tqdm(range(self.control.ntime), desc="MOD-WET Simulation:"):
+        for t in tqdm(range(self.control.ntime), desc="MOD-WET Simulation:", mininterval=1.0, maxinterval=5.0):
 
             # a. Meteorological Forcing Distribution
             PPT0, U0, Ta0, Psfc0, qa0, SW0, LWdown0 = step_met_forcing_distribution(self, step_idx=t, ts_idx=t_time)

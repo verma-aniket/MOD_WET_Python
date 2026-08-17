@@ -39,7 +39,10 @@ def step_met_forcing_distribution(model, step_idx: int, ts_idx: int):
     if step_idx > 0:
         model.state.NDayLastSnow += dt_hours / 24.0
 
-    # Extract Day of Year (DOY) and UTC time
+    # Extract Day of Year (DOY) and UTC time 
+    ##############################################################
+    # will need to convert elapsed_days to day of year!!!!
+    ##############################################################
     current_time = model.forcing.time[forcing_idx]
     doy = int(np.floor(current_time))
     utc = float((current_time - doy) * 24.0)

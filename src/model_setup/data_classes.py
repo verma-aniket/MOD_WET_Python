@@ -14,7 +14,7 @@ class ControlParameters:
     dt: float = 0.25                                        # Timestep (hours)
     start_day: float = 0.0                                  # Starting day in forcing file
     # EDITTED FOR TESTING, SWITCH n_days back to 365
-    n_days: int = 10                                        # Number of simulation days
+    n_days: int = 365                                       # Number of simulation days
     timeseries_frq2store: int = 4                           # Frequency to store time series
     map_frq2store: int = 4 * 24                             # Frequency to store maps (e.g., 96 = daily)
     frq2screen: int = 24 * 4 * 10                           # Frequency of screen updates
@@ -291,8 +291,7 @@ class StepVariables:
 
     # NEW: infiltration model output (2D: nx x ny)
     qie_new: np.ndarray = field(init=False)                 # Infiltration excess runoff (in cm)
-
-
+    
     # NEW: topmodel output (2D: nx x ny)
     Srz_new: np.ndarray = field(init=False)                 # Rootzone storage at end of time step (m)
     Suz_new: np.ndarray = field(init=False)                 # Unsaturated zone storage at end of time step (m)

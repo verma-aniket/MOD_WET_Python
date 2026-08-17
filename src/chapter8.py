@@ -54,7 +54,8 @@ def richardson_number(z: float | np.ndarray, Tair: np.ndarray, U: np.ndarray, Ts
 def stab_corr_factors(RiB: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Determines atmospheric stability correction factors from the bulk Richardson number."""
     # Takes care of RiB values above the allowable limit
-    RiB_capped = np.minimum(RiB, 0.19)
+    # RiB_capped = np.minimum(RiB, 0.19) # CAUSES massive thresholding swings when wind speed is close to 0.19, DO NOT USE
+    RiB_capped = np.where(RiB >= 0.2, 0.19, RiB) # replicates original MATLAB behavior, more stable
 
     phi_m = np.full_like(RiB_capped, np.nan, dtype=np.float64)
     phi_h = np.full_like(RiB_capped, np.nan, dtype=np.float64)
@@ -147,10 +148,7 @@ def soil_SEB_solver_prognostic(
     LWup: Upwelling longwave radiation (W/m^2)
     """
     omega = 1.0 / 86400.0  # diurnal frequency (1/s)
-
-    # Compute air density
-    # e = specific_humidity_to_vp(qa, Psfc)
-
+    
     # Compute net shortwave radiation (W/m^2)
     SW_net = SW * (1.0 - albedo)
 
@@ -187,3 +185,4 @@ def soil_SEB_solver_prognostic(
     Td = Td0 + dt * (omega * (Ts0 - Td0)) * 3600.0
 
     return Tsurf, LE, H, G, Rn, Td, LWup
+

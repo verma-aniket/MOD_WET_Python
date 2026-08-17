@@ -29,6 +29,10 @@ def mass_balance_check(PPT: np.ndarray, ET: np.ndarray, qse: np.ndarray, qb: np.
     # Conversion from depth to volumetric flow rate
     depth2flow = dx * dy / dt
 
+    # Convert storage terms to vol. rates (m^3/hr)
+    # Conversion between mm and meters
+    mm2m = 1000.0
+
     # Flow Maps (converted below to vol. flow units (m^3/hr))
     qie_vol = qie * depth2flow
     qse_vol = qse * depth2flow
@@ -37,11 +41,17 @@ def mass_balance_check(PPT: np.ndarray, ET: np.ndarray, qse: np.ndarray, qb: np.
 
     # Flux Maps
     ET_vol = ET * depth2flow * dt  # converted to depth units (m)
-    PPT_vol = PPT * depth2flow * dt  # converted to depth units (m)
 
-    # Convert storage terms to vol. rates (m^3/hr)
-    # Conversion between mm and meters
-    mm2m = 1000.0
+    # ***IMPORTANT NOTE: 
+    #   In MATLAB PPT0 gets converted from mm/hr to m/h before calling the
+    #   infiltration model DURING the loop itself.
+    #   In Python, PPT0 stays mm/h for the whole loop, and a copy (called PPT0_m) 
+    #   is created which is the m/h version of PPT0, so as not to overwrite PPT0 
+    #   during the simulation over one time step. 
+    #   Because this difference, PPT0 enters the mass balance check in mm/h in Python,
+    #   not in m/h like in MATLAB. So we convert PPT0 from mm/h to m/h for the 
+    #   mass balance check here. 
+    PPT_vol = PPT / mm2m * depth2flow * dt  # converted to depth units (m)
 
     # Convert storage change maps to equivalent vol. rates (m^3/hr)
     dSD_vol = dSD * depth2flow

@@ -32,8 +32,14 @@ def step_infiltration(model, masksnow: np.ndarray, maskSEB: np.ndarray, PPT0: np
     # If snow exists, but no melt --> no infiltration
     # If snow exists with melt--> melt flux input to soil infiltration
     # model
-    # If no snow, pass precip. input to infiltration model
-    PPT0_m = PPT0 / 1000.0  # PPT mm/hr --> m/hr
+    # If no snow, pass precip. input to infiltration mode
+    PPT0_m = np.copy(PPT0) / 1000.0  # PPT mm/hr --> m/hr
+    # Note: In MATLAB, the PPT0 gets over-written when units 
+    # are converted from mm/hr to m/hr, here a copy is created 
+    # instead to preserve units (not that it affects anything downstream)
+    # Because of this decicion however, the mass balance calculation 
+    # needs to be adjusted, and PPT0 must be converted from mm/hr to m/hr
+    # in the mass balance check function as well
 
     # Pre-allocate infiltration rate array
     f = np.zeros((model.control.nx, model.control.ny), dtype=float)
@@ -76,6 +82,9 @@ def step_infiltration(model, masksnow: np.ndarray, maskSEB: np.ndarray, PPT0: np
         f[Ipond] = F_out / model.control.dt  # (m/hr)
         model.step_vars.qie_new[Ipond] = qie_out  # (m)
 
+    # Initialize ET
+    model.step_vars.ET_out = np.full((model.control.nx, model.control.ny), np.nan, dtype=np.float64)
+
     # Determine evaporative/sublimation flux at each pixel
     if np.any(masksnow):
         model.step_vars.ET_out[masksnow] = (
@@ -85,7 +94,7 @@ def step_infiltration(model, masksnow: np.ndarray, maskSEB: np.ndarray, PPT0: np
         model.step_vars.ET_out[maskSEB] = (
             model.step_vars.LE_out[maskSEB] / model.constants.Lv / model.constants.rhow * 3600.0
         )  # (m/hr)
-
+    
     # Only send ET for non-snowy pixels to TOPMODEL (i.e. set ET for snowy
     # pixels to zero in this case).
     ETsoil = np.copy(model.step_vars.ET_out)  # (m/hr)

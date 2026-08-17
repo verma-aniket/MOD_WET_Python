@@ -26,7 +26,7 @@ def step_update_state_and_maps(model, step_idx: int, map_t_idx: int):
     model.state.snowfrac = model.step_vars.snowfrac_new.copy()
 
     # Compute time averages and re-initialize cumulative sum arrays
-    # Convert 0-indexed tt to 1-based step number for modulo check
+    # Convert 0-indexed step_idx to 1-based step number for modulo check
     if (step_idx + 1) % model.control.map_frq2store == 0:
         denom = float(model.control.map_frq2store)
         idx = map_t_idx  # Slot index in MapOutputs 3D arrays (n_days, nx, ny)

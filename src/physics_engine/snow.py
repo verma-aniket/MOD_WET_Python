@@ -40,19 +40,11 @@ def step_snow_model(model, PPT0: np.ndarray, U0: np.ndarray, Ta0: np.ndarray, Ps
     maskSEB = (~masksnow) & (model.spatial.mask == 1)
 
     # 3. Pre-allocate / initialize step_vars defaults for current timestep
-    model.step_vars.Tsurf_new = np.copy(model.state.Tsurf)
-    model.step_vars.SWE_new = np.copy(model.state.SWE)
-    model.step_vars.Td_new = np.full((model.control.nx, model.control.ny), np.nan)
-    model.step_vars.snowdens_new = np.copy(model.state.snowdens)
-    model.step_vars.snowdepth_new = np.zeros((model.control.nx, model.control.ny))
-    model.step_vars.snowfrac_new = np.zeros((model.control.nx, model.control.ny))
-
-    model.step_vars.Rn_out = np.zeros((model.control.nx, model.control.ny))
-    model.step_vars.LE_out = np.zeros((model.control.nx, model.control.ny))
-    model.step_vars.H_out = np.zeros((model.control.nx, model.control.ny))
-    model.step_vars.G_out = np.zeros((model.control.nx, model.control.ny))
-    model.step_vars.Rlup_out = np.zeros((model.control.nx, model.control.ny))
-    model.step_vars.albedo_out = np.zeros((model.control.nx, model.control.ny))
+    model.step_vars.Rn_out = np.full((model.control.nx, model.control.ny), np.nan, dtype=np.float64)
+    model.step_vars.LE_out = np.full((model.control.nx, model.control.ny), np.nan, dtype=np.float64)
+    model.step_vars.H_out = np.full((model.control.nx, model.control.ny), np.nan, dtype=np.float64)
+    model.step_vars.G_out = np.full((model.control.nx, model.control.ny), np.nan, dtype=np.float64)
+    model.step_vars.Rlup_out = np.full((model.control.nx, model.control.ny), np.nan, dtype=np.float64)
     model.step_vars.melt_out = np.zeros((model.control.nx, model.control.ny))
 
     # 4. Execute snow physics if snow is present or falling
