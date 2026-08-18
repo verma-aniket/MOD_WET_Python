@@ -13,7 +13,6 @@ class ControlParameters:
     # Simulation Timing Parameters
     dt: float = 0.25                                        # Timestep (hours)
     start_day: float = 0.0                                  # Starting day in forcing file
-    # EDITTED FOR TESTING, SWITCH n_days back to 365
     n_days: int = 365                                       # Number of simulation days
     timeseries_frq2store: int = 4                           # Frequency to store time series
     map_frq2store: int = 4 * 24                             # Frequency to store maps (e.g., 96 = daily)
@@ -223,7 +222,10 @@ class MetForcingData:
     """Meteorological forcing timeseries and station attributes."""
 
     # Time index, 365*24*4=35040 values (15 min temporal resolution)
-    time: np.ndarray | None = None                      # Meteorological forcing timestamp array (days)
+    time: np.ndarray | None = None                          # Meteorological forcing timestamp array (datetime stamp)
+    elapsed_days: np.ndarray | None = None                  # Elapsed days (including fractional days) from start of met data (days)
+    DOY: np.ndarray | None = None                           # day of year (including fractional days) from start of met data (DOY)
+    start_date_time: str | None = None                      # start date time string in format yyyy-mm-dd HH:MM:SS
     gage_elev: float | None = None                          # Weather station elevation (m)
 
     # Meteorological Inputs (same shape as met_time)
@@ -235,7 +237,7 @@ class MetForcingData:
     PPT: np.ndarray | None = None                           # Precipitation rate array (mm/h)
 
     # Solar index (same shape as met_time)
-    solar_index: np.ndarray | None = None                           # 
+    solar_index: np.ndarray | None = None
 
 @dataclass
 class ModelState:

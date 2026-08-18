@@ -189,7 +189,7 @@ def get_solar_index(model) -> None:
         steps_per_hour = int(1.0 / control.dt)
 
         # 1. Downsample forcing vectors to hourly resolution
-        time_hourly = forcing.time[::steps_per_hour]
+        time_hourly = forcing.DOY[::steps_per_hour]
         SW_hourly = forcing.SW[::steps_per_hour]
         qa_hourly = forcing.qa[::steps_per_hour]
         Ta_hourly = forcing.Ta[::steps_per_hour]

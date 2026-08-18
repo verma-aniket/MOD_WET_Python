@@ -1,5 +1,16 @@
 import numpy as np
 
+# Functions to add:
+#   bisect
+#   precipitable_water
+#   RH_to_vp
+#   vapor_pressure_deficit
+#   vp_to_RH
+#   vp_to_wet_bulb_temperature
+#   wet_bulb_temperature_to_vp
+#   Wp_from_Td
+
+
 def air_density(T: float | np.ndarray, e: float | np.ndarray, P: float | np.ndarray, Rd: float, epsilon: float
                 ) -> float | np.ndarray:
     """Computes air density (kg/m^3)."""

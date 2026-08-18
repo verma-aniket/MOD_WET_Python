@@ -111,7 +111,7 @@ def compute_shade_lookup_table_and_SVF(easting: np.ndarray, northing: np.ndarray
     horizon_angle = np.zeros((nrows * ncols, n_az))
 
     # Azimuth Loop
-    for iaz in tqdm(range(n_az), desc="Shade Lookup Progress:"):
+    for iaz in tqdm(range(n_az), desc="Shade Lookup Progress"):
         az_deg = discrete_azimuth_values[iaz]
         sazimuth = np.radians(az_deg)
 

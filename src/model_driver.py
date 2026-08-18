@@ -91,7 +91,7 @@ class MODWETModel:
         t_map = 0
 
         # Main Simulation Loop
-        for t in tqdm(range(self.control.ntime), desc="MOD-WET Simulation:", mininterval=1.0, maxinterval=5.0):
+        for t in tqdm(range(self.control.ntime), desc="MOD-WET Simulation", mininterval=1.0, maxinterval=5.0):
 
             # a. Meteorological Forcing Distribution
             PPT0, U0, Ta0, Psfc0, qa0, SW0, LWdown0 = step_met_forcing_distribution(self, step_idx=t, ts_idx=t_time)

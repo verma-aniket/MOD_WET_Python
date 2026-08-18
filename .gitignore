@@ -4,9 +4,9 @@ __pycache__/
 
 # Ignore all local data and other select folders and scripts
 data/
+raw_input_data/
 notebooks/
 obsolete/
-src/chapter1.py
 tests/
 plots/
 

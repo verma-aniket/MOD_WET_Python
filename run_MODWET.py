@@ -11,11 +11,11 @@ if str(REPO_ROOT) not in sys.path:
 # load model class
 from src.model_driver import MODWETModel
 
-def test_simulation_run():
+def simulation_run():
 
     # 1. Define input and output file paths
-    basin_data_path = REPO_ROOT / "data/preprocessed_inputs/high_elev_basin_static_data.nc"
-    met_forcing_path = REPO_ROOT / "data/preprocessed_inputs/high_elev_met_forcing.nc"
+    basin_data_path = REPO_ROOT / "data/preprocessed_inputs/high_elev_basin_static_data_new.nc"
+    met_forcing_path = REPO_ROOT / "data/preprocessed_inputs/high_elev_met_forcing_new.nc"
     output_filepath = REPO_ROOT / "data/output/high_elev_simulation_results.nc"
 
     # 2. Initialize the model
@@ -33,4 +33,4 @@ def test_simulation_run():
     print(f"\nSimulation run and export completed successfully!")
 
 if __name__ == "__main__":
-    test_simulation_run()
+    simulation_run()

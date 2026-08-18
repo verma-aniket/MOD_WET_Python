@@ -66,9 +66,12 @@ def flow_network(flowdir: np.ndarray | sp.coo_matrix | sp.csr_matrix, mask: np.n
         flowdir = flowdir.tocoo()
 
     # 1. Extract row (U) and column (D) indices where flowdir == 1 (in 1D/Fortran order)
+    # Force CSC layout to sort by column, then convert to COO to extract row/col arrays
+    # so U and D are ordered Column-by-Column (MATLAB style)
     if sp.issparse(flowdir):
-        ones_mask = flowdir.data == 1
-        U, D = flowdir.row[ones_mask], flowdir.col[ones_mask]
+        flowdir_mb_order = flowdir.tocsc().tocoo()
+        ones_mask = flowdir_mb_order.data == 1
+        U, D = flowdir_mb_order.row[ones_mask], flowdir_mb_order.col[ones_mask]
     else:
         U, D = np.where(flowdir == 1)
 

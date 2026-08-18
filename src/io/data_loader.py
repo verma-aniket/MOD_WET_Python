@@ -64,7 +64,10 @@ def load_met_forcing_data(file_path: str | Path, forcing) -> None:
     # Extract and load data
 
     # Time index
-    forcing.time = ds['time'].values # change to "elapased_days" when using Python data preprocessor
+    forcing.time = ds['time'].values
+    forcing.elapsed_days = ds['elapsed_days'].values
+    forcing.DOY = ds['DOY'].values
+    forcing.start_date_time = ds.start_date_time
 
     # Gage Elevation
     forcing.gage_elev = ds.gage_elev

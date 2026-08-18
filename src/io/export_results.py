@@ -11,9 +11,16 @@ def save_simulation_results_netcdf(model, output_path: str | Path) -> None:
 
     # 1. Construct Time Coordinates (days)
     end_day = model.control.start_day + model.control.n_days
-    time_states = np.linspace(model.control.start_day, end_day, model.control.nt + 1, dtype=np.float32)
-    time_fluxes = np.linspace(model.control.start_day, end_day, model.control.nt, dtype=np.float32)
-    time_maps = np.linspace(model.control.start_day, end_day, model.map_outputs.n_days, dtype=np.float32)
+    time_states_val = np.linspace(model.control.start_day, end_day, model.control.nt + 1, dtype=np.float32)
+    time_fluxes_val = np.linspace(model.control.start_day, end_day, model.control.nt, dtype=np.float32)
+    time_maps_val = np.linspace(model.control.start_day, end_day, model.map_outputs.n_days, dtype=np.float32)
+
+    # Convert time coordinates to time stamps
+    first_date_string = model.forcing.start_date_time
+    first_date = np.datetime64(first_date_string)
+    time_states = first_date + (time_states_val * 86400).astype("timedelta64[s]")
+    time_fluxes = first_date + (time_fluxes_val * 86400).astype("timedelta64[s]")
+    time_maps = first_date + (time_maps_val * 86400).astype("timedelta64[s]") 
 
     # 2. Extract Spatial Coordinates
     northing = (
@@ -211,9 +218,9 @@ def save_simulation_results_netcdf(model, output_path: str | Path) -> None:
     coords = {
         "northing": ("northing", northing, {"units": "m"}),
         "easting": ("easting", easting, {"units": "m"}),
-        "time_maps": ("time_maps", time_maps, {"units": "days"}),
-        "time_states": ("time_states", time_states, {"units": "days"}),
-        "time_fluxes": ("time_fluxes", time_fluxes, {"units": "days"}),
+        "time_maps": ("time_maps", time_maps),
+        "time_states": ("time_states", time_states),
+        "time_fluxes": ("time_fluxes", time_fluxes),
     }
     if n_special > 0:
         coords["special_pixel"] = ("special_pixel", np.arange(n_special))
