@@ -17,5 +17,4 @@ Project0.py
 *.pickle
 *.npy
 *.zip
-*.nc
 *.mat
