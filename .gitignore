@@ -11,7 +11,6 @@ plots/
 Project0.py
 
 # Ignore common spreadsheet and data types
-*.csv
 *.xlsx
 *.h5
 *.pickle
