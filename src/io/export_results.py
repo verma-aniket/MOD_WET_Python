@@ -214,7 +214,15 @@ def save_simulation_results_netcdf(model, output_path: str | Path) -> None:
                 {"long_name": "Stream pixel hydrograph", "units": "m^3/s"},
             )
 
-    # 8. Define Coordinates
+    # 8. Add basin area as a stand-alone variable
+    if model.params.basin_area is not None:
+        data_vars["basin_area"] = (
+                        ("x"), # x is a dummy coordiante variable
+                        [float(model.params.basin_area)],
+                        {"long_name": "Total watershed surface area", "units": "m^2"},
+                    )
+
+    # 9. Define Coordinates
     coords = {
         "northing": ("northing", northing, {"units": "m"}),
         "easting": ("easting", easting, {"units": "m"}),
@@ -227,7 +235,7 @@ def save_simulation_results_netcdf(model, output_path: str | Path) -> None:
     if n_stream > 0:
         coords["stream_pixel"] = ("stream_pixel", np.arange(n_stream))
 
-    # 9. Extract Global Attributes
+    # 10. Extract Global Attributes
     attrs = {
         "dx": float(model.control.dx),
         "dy": float(model.control.dy),
@@ -241,10 +249,10 @@ def save_simulation_results_netcdf(model, output_path: str | Path) -> None:
         attrs["lat_mean"] = float(model.params.lat_mean)
     if model.params.lon_mean is not None:
         attrs["lon_mean"] = float(model.params.lon_mean)
-    if model.params.basin_area is not None:
-        attrs["basin_area"] = float(model.params.basin_area)
+    # if model.params.basin_area is not None:
+    #     attrs["basin_area"] = float(model.params.basin_area)
 
-    # 10. Assemble Dataset and Export NetCDF4
+    # 11. Assemble Dataset and Export NetCDF4
     ds = xr.Dataset(data_vars=data_vars, coords=coords, attrs=attrs)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     ds.to_netcdf(output_path)

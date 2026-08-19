@@ -264,6 +264,11 @@ class ModelState:
     # Tracking / Memory Variables (2D: nx x ny)
     NDayLastSnow: np.ndarray = field(init=False)            # Days since last major snowfall (-)
 
+    # Lateral Routing Flow Buffers (2D: nx x ny)
+    INFLOW_old: np.ndarray = field(init=False)              # Previous timestep inflow rate (m^3/s)
+    OUTFLOW_old: np.ndarray = field(init=False)             # Previous timestep outflow rate (m^3/s)
+    NEW_INFLOWS: np.ndarray = field(init=False)             # Current timestep calculated inflow rate (m^3/s)
+
     def __post_init__(self) -> None:
         shape = (self.nx, self.ny)
         for name in self.__dataclass_fields__:
@@ -313,11 +318,6 @@ class StepVariables:
 
     # NEW: Energy Fluxes (2D: nx x ny)
     ET_out: np.ndarray = field(init=False)                  # evaporative flux (m/hr)
-
-    # Lateral Routing Flow Buffers (2D: nx x ny)
-    INFLOW_old: np.ndarray = field(init=False)              # Previous timestep inflow rate (m^3/s)
-    OUTFLOW_old: np.ndarray = field(init=False)             # Previous timestep outflow rate (m^3/s)
-    NEW_INFLOWS: np.ndarray = field(init=False)             # Current timestep calculated inflow rate (m^3/s)
 
     def __post_init__(self) -> None:
         shape = (self.nx, self.ny)

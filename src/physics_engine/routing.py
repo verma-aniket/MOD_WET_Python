@@ -22,7 +22,8 @@ def step_routing(model, step_idx: int, ts_idx: int) -> None:
     # Set the new inflow to the runoff generated from model (current
     # timestep) and the inflows from upstream. Need to convert units to
     # m^3/s.
-    if model.control.routing_time_step_flag == 1:
+
+    if model.control.routing_time_step_flag:
         # This allows for higher temporal resolution of routing (based on
         # computed ratio). Assumes the total runoff from each pixel is the
         # same over the whole timestep, but partitions it into equal amounts
@@ -31,12 +32,12 @@ def step_routing(model, step_idx: int, ts_idx: int) -> None:
             (model.step_vars.qie_new + model.step_vars.qse_new) / model.control.dt
             + model.step_vars.qb_new / model.control.dx
         ) * (model.control.dx**2) / 3600.0
-        dummy2 = model.step_vars.NEW_INFLOWS + dummy1
+        dummy2 = model.state.NEW_INFLOWS + dummy1
 
         dt_ratio = routing_celerity_check(
-            INFLOW_old=model.step_vars.INFLOW_old,
+            INFLOW_old=model.state.INFLOW_old,
             INFLOW_new=dummy2,
-            OUTFLOW_old=model.step_vars.OUTFLOW_old,
+            OUTFLOW_old=model.state.OUTFLOW_old,
             n=model.network.manning_n,
             bed_slope=model.network.bed_slope,
             dx=model.control.dx,
@@ -60,13 +61,13 @@ def step_routing(model, step_idx: int, ts_idx: int) -> None:
             (model.step_vars.qie_new + model.step_vars.qse_new) / model.control.dt
             + model.step_vars.qb_new / model.control.dx
         ) * (model.control.dx**2) / 3600.0 / dt_ratio
-        INFLOW_new = model.step_vars.NEW_INFLOWS + RUNOFF_new
+        INFLOW_new = model.state.NEW_INFLOWS + RUNOFF_new
 
         # Call Muskingum-Cunge routing functions
         NEW_INFLOWS, NEW_OUTFLOWS = routing_muskingum_cunge(
-            INFLOW_old=model.step_vars.INFLOW_old,
+            INFLOW_old=model.state.INFLOW_old,
             INFLOW_new=INFLOW_new,
-            OUTFLOW_old=model.step_vars.OUTFLOW_old,
+            OUTFLOW_old=model.state.OUTFLOW_old,
             Iupstream=model.network.Iupstream,
             Idownstream=model.network.Idownstream,
             mask=model.spatial.maskNaN,
@@ -78,11 +79,11 @@ def step_routing(model, step_idx: int, ts_idx: int) -> None:
         )
 
         # Set the new values to old values for next time step
-        model.step_vars.INFLOW_old = INFLOW_new
-        model.step_vars.OUTFLOW_old = NEW_OUTFLOWS
+        model.state.INFLOW_old = INFLOW_new
+        model.state.OUTFLOW_old = NEW_OUTFLOWS
 
         # this line is new - store NEW_INFLOWS for next iteration
-        model.step_vars.NEW_INFLOWS = NEW_INFLOWS
+        model.state.NEW_INFLOWS = NEW_INFLOWS
 
         # Compute flows at interior stream pixels (accumulates flow over loop)
         if model.params.stream_pixels and len(model.params.stream_pixels[0]) > 0:
