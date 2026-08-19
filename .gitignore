@@ -3,12 +3,12 @@ __pycache__/
 *.pyc
 
 # Ignore all local data and other select folders and scripts
-data/
 raw_input_data/
 notebooks/
 obsolete/
 tests/
 plots/
+Project0.py
 
 # Ignore common spreadsheet and data types
 *.csv

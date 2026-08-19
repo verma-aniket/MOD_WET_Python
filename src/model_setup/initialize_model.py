@@ -210,9 +210,9 @@ def get_solar_index(model) -> None:
         )
 
         # 4. Vectorized vapor pressure & precipitable water
-        ea = specific_humidity_to_vp(qa_hourly, Psfc_hourly, constants.epsilon)
+        ea = specific_humidity_to_vp(qa_hourly, Psfc_hourly, epsilon=constants.epsilon)
         Wp = Wp_from_near_surface_met_data(
-            ea, Ta_hourly, params.precip_water_model_name, constants.T_0, constants.e_s0, constants.Lv, constants.Rv
+            ea, Ta_hourly, params.precip_water_model_name, T_0=constants.T_0, e_s0=constants.e_s0, Lv=constants.Lv, Rv=constants.Rv
         )
 
         # 5. Vectorized downwelling clear-sky shortwave radiation

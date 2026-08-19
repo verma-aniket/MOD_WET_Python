@@ -5,18 +5,23 @@ from src.chapter2 import air_density, sat_vapor_pressure, specific_humidity_to_v
 def aero_resistance(z: float | np.ndarray, h: float | np.ndarray, v: np.ndarray, kappa: float = 0.4
                     ) -> np.ndarray:
     """
-    Description:
-    This function computes the aerodynamic resistance used in various
-    evapotranspiration models
+    Calculate aerodynamic resistance for evapotranspiration models.
 
-    Inputs:
-    z: Velocity reference height in meters
-    h: Characteristic roughness height in meters
-    v: Horizontal wind velocity at reference height (z) in m/s
-    kappa: Von Karman constant (-)
+    Parameters
+    ----------
+    z : float or numpy.ndarray
+        Velocity reference height in meters.
+    h : float or numpy.ndarray
+        Characteristic roughness height in meters.
+    v : numpy.ndarray
+        Horizontal wind velocity at reference height (z) in m/s.
+    kappa : float, default=0.4
+        Von Karman constant (-).
 
-    Outputs:
-    r_a: Aerodynamic resistance in s/m
+    Returns
+    -------
+    numpy.ndarray
+        Aerodynamic resistance in s/m.
     """
     d = 0.7 * h     # Zero-plane displacement height approximation
     z_0 = 0.1 * h   # Momentum roughness height approximation
@@ -33,7 +38,7 @@ def mass_transfer(P: np.ndarray, T_surf: np.ndarray, T_air: np.ndarray, q_air: n
     e_air = specific_humidity_to_vp(q_air, P, epsilon=epsilon)
     density = air_density(T_air, e_air, P, Rd=Rd, epsilon=epsilon)
     
-    esat_surf = sat_vapor_pressure(T_surf, e_s0=e_s0, Lv=Lv, Rv=Rv, T_0=T_0)
+    esat_surf = sat_vapor_pressure(T_surf, T_0=T_0, e_s0=e_s0, Lv=Lv, Rv=Rv)
     q_sat = vp_to_specific_humidity(esat_surf, P, epsilon=epsilon)
 
     if method == 0:
@@ -183,6 +188,9 @@ def soil_SEB_solver_prognostic(
     # Mimics the force restore equation (with a constant soil heat capacity)
     Tsurf = Ts0 + dt * (CT * G - 2.0 * np.pi * omega * (Ts0 - Td0)) * 3600.0
     Td = Td0 + dt * (omega * (Ts0 - Td0)) * 3600.0
+
+    # Safety Guard: Prevent explicit Euler overshoots relative to air temp
+    Tsurf = np.clip(Tsurf, Ta - 25.0, Ta + 25.0)
 
     return Tsurf, LE, H, G, Rn, Td, LWup
 

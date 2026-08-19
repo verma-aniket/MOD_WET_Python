@@ -27,7 +27,7 @@ def clear_sky_emiss(e: np.ndarray, T: np.ndarray, model_name: str, T_0: float, e
         # convert vapor pressure to Pa for precip. water function call
         e = e * 100 # Pa
         # compute precipitable water (in cm)
-        Wp = Wp_from_near_surface_met_data(e, T, model_name, T_0, e_s0, Lv, Rv)
+        Wp = Wp_from_near_surface_met_data(e, T, model_name, T_0=T_0, e_s0=e_s0, Lv=Lv, Rv=Rv)
         return 1.0 - (1.0 + Wp) * np.exp(- np.sqrt(1.2 + 3.0 * Wp))
     elif model_name == 'idso':
         return 0.74 + 0.0049 * e

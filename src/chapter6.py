@@ -100,11 +100,11 @@ def disaggregate_qair(qa: np.ndarray, press: np.ndarray, press_disagg: np.ndarra
                        epsilon: float, T_0: float, e_s0: float, Lv: float, Rv: float
                        ) -> np.ndarray:
     """Disaggregates specific humidity using dew point temperature lapse rates."""
-    e_gage = specific_humidity_to_vp(qa, press, epsilon)
-    Td_gage = vp_to_dew_point_temperature(e_gage, T_0, e_s0, Lv, Rv)
+    e_gage = specific_humidity_to_vp(qa, press, epsilon=epsilon)
+    Td_gage = vp_to_dew_point_temperature(e_gage, T_0=T_0, e_s0=e_s0, Lv=Lv, Rv=Rv)
     Td_pix = Td_gage + lapse_rate_tdew * (elevation_pixel - gage_elev)
-    e_pix = dew_point_temperature_to_vp(Td_pix, T_0, e_s0, Lv, Rv)
-    return vp_to_specific_humidity(e_pix, press_disagg, epsilon)
+    e_pix = dew_point_temperature_to_vp(Td_pix, T_0=T_0, e_s0=e_s0, Lv=Lv, Rv=Rv)
+    return vp_to_specific_humidity(e_pix, press_disagg, epsilon=epsilon)
 
 def disaggregate_SW(
     SWin: np.ndarray,
@@ -422,8 +422,8 @@ def distribute_met_forcing(
     )
 
     # Atmospheric emissivity & downwelling longwave radiation
-    ea = specific_humidity_to_vp(qa0, Psfc0, epsilon)
-    esat = sat_vapor_pressure(Ta0, T_0, e_s0, Lv, Rv)
+    ea = specific_humidity_to_vp(qa0, Psfc0, epsilon=epsilon)
+    esat = sat_vapor_pressure(Ta0, T_0=T_0, e_s0=e_s0, Lv=Lv, Rv=Rv)
     ea = np.minimum(ea, esat)
 
     cloud_cover_frac = 1.0 - solar_index
@@ -531,6 +531,7 @@ def snow_model(
     snow_depth: snow depth map (mm)
     snow_fraction: snow fraction map (-)
     """
+
     min_density = 100.0  # minimum (new snow) density (kg/m^3)
     
     # Copy array to prevent mutating input arguments in place
@@ -548,14 +549,18 @@ def snow_model(
     rho = air_density(Ta, ea, Psrf, Rd=Rd, epsilon=epsilon)
 
     # Assume surface humidity is equal to ICE-sat. vapor pressure
-    esat_ice = sat_vapor_pressure_ice(Tsnow0, e_s0=e_s0, Ls=Ls, Rv=Rv, T_0=T_0)
+    esat_ice = sat_vapor_pressure_ice(Tsnow0, T_0=T_0, e_s0=e_s0, Ls=Ls, Rv=Rv)
     qsurf = vp_to_specific_humidity(esat_ice, Psrf, epsilon=epsilon)  # kg/kg
 
     # Aerodynamic resistance (s/m) -- Assumes neutral conditions
-    ra = aero_resistance(z_snow, h_snow, wind, kappa=kappa)
+    # check for near-zero (less than 0.5 m/s) windspeed and set to low, but
+    # positive value
+    wind_calc = np.copy(wind)
+    wind_calc[wind_calc < 0.5] = 0.5  # m/s
+    ra = aero_resistance(z_snow, h_snow, wind_calc, kappa=kappa)
     
     # Stability corrections
-    RiB = richardson_number(z_snow, Ta, wind, Tsnow0, g=g)
+    RiB = richardson_number(z=z_snow, Tair=Ta, U=wind_calc, Tsurf=Tsnow0, g=g)
     phi_m, phi_h = stab_corr_factors(RiB)
     ra = ra * phi_m * phi_h
 
@@ -603,6 +608,11 @@ def snow_model(
 
     # ENERGY BALANCE equation --> Surface temperature update (K)
     Tsnow_map = Tsnow0 + dt * (Rn - LE - H + advec_energy + latent_energy) / (ci * dummySWE * rhow) * (sec2hr * mm2m)
+
+    # Safety Guard: Snow surface temperature physically cannot exceed freezing (T_f)
+    #               Also, set lower bound relative to air temp to prevent explicit Euler overshoots
+    # This is identical to the lower bound in the surface energy balance (SEB) portion of the simulation model 
+    Tsnow_map = np.clip(Tsnow_map, Ta - 25.0, T_f)
 
     # Check for phase change
     melt_mask = (Tsnow_map >= T_f) & (SWE0 > 0.0)

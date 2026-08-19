@@ -123,4 +123,7 @@ def step_snow_model(model, PPT0: np.ndarray, U0: np.ndarray, Ta0: np.ndarray, Ps
         model.step_vars.albedo_out[masksnow] = albedo_snow
         model.step_vars.melt_out[masksnow] = melt_snow / 1000.0 # # Convert mm/hr to m/hr
 
+        # # clear memory
+        # del SWE_map, Tsnow_map, melt_snow, LE_snow, H_snow, Rn_snow, albedo_snow, Rlup_snow, snow_density_map, snow_depth_map, snow_fraction_map
+
     return masksnow, maskSEB

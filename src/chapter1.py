@@ -558,7 +558,7 @@ def wflowacc(X: np.ndarray, Y: np.ndarray, dem: np.ndarray,
 
 def watershed_area_and_stream_delineation(easting: np.ndarray, northing: np.ndarray, elev_in: np.ndarray, 
                                          outlet_coordinate: np.ndarray, percent_basin_area: float = 0.01,
-                                         develop_plots: bool = False, plots_path: Optional[str | Path] = None,
+                                         develop_plots: bool = False, display_plots: bool = False, plots_path: Optional[str | Path] = None,
                                          ) -> tuple[np.ndarray, np.ndarray, sparse.csr_matrix, np.ndarray, np.ndarray, np.ndarray]:
     """
     Description:
@@ -573,6 +573,8 @@ def watershed_area_and_stream_delineation(easting: np.ndarray, northing: np.ndar
     elev: elevation matrix (at each x,y point, i.e. the DEM)
     outlet_coordinate: 1x2 matrix with the x and y coordinate of the basin
       outlet;
+    develop_plots: boolean, if True, saves plots to plots_path
+    display_plots: boolean, if True, displays plots to screen (develop_plots must be set to True)
     plots_path: folder location of where to save plots
     percent_basin_area: The percent of basin area that must contribute to
     flow accumulation for a pixel to be deemed a "stream" pixel; expressed as 
@@ -615,6 +617,7 @@ def watershed_area_and_stream_delineation(easting: np.ndarray, northing: np.ndar
 
     # Visual confirmations bypassed automatically for batch execution runs, plots are saved
     if develop_plots:
+        # Figure 1
         fig1, ax = plt.subplots(num=1, figsize=(7, 7))
         im = ax.imshow(
             elev,
@@ -630,13 +633,13 @@ def watershed_area_and_stream_delineation(easting: np.ndarray, northing: np.ndar
         ax.set_ylabel("Northing (m)", fontsize=12)
         ax.tick_params(labelsize=10)
         ax.ticklabel_format(style='sci', axis='both', scilimits=(0, 0), useMathText=True)
-        ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=np.floor(len(easting)/3)))
-        ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=np.floor(len(northing)/3)))
 
         # Save Figure
         fig1.savefig(plots_path / "Fig1_elevation.png", dpi=300,  bbox_inches="tight", transparent=False)
-        plt.close(fig1)
-        
+        if not display_plots:
+            plt.close(fig1)
+
+        # Figure 2
         fig2, ax = plt.subplots(num=2, figsize=(7, 7))
         im = ax.imshow(
             np.log(flowacc), 
@@ -655,12 +658,11 @@ def watershed_area_and_stream_delineation(easting: np.ndarray, northing: np.ndar
         ax.set_ylabel("Northing (m)", fontsize=12)
         ax.tick_params(labelsize=10)
         ax.ticklabel_format(style='sci', axis='both', scilimits=(0, 0), useMathText=True)
-        ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=np.floor(len(easting)/3)))
-        ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=np.floor(len(northing)/3)))
 
         # Save Figure
         fig2.savefig(plots_path / "Fig2_log_flow_accumulation.png", dpi=300,  bbox_inches="tight", transparent=False)
-        plt.close(fig2)
+        if not display_plots:
+            plt.close(fig2)
 
     # index of outlet point
     outlet_index = np.ravel_multi_index((row_coord, col_coord), X.shape, order='F')
@@ -797,12 +799,11 @@ def watershed_area_and_stream_delineation(easting: np.ndarray, northing: np.ndar
         ax.set_ylabel('Northing (m)', fontsize=12)
         ax.tick_params(labelsize=10)
         ax.ticklabel_format(style='sci', axis='both', scilimits=(0, 0), useMathText=True)
-        ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=np.floor(len(easting)/3)))
-        ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=np.floor(len(northing)/3)))
 
         # Save Figure
         fig3.savefig(plots_path / "Fig3_watershed_mask_stream_network.png", dpi=300, bbox_inches="tight", transparent=False)
-        plt.close(fig3)
+        if not display_plots:
+            plt.close(fig3)
 
         # Figure 4 (3D Plot)
 
@@ -858,16 +859,17 @@ def watershed_area_and_stream_delineation(easting: np.ndarray, northing: np.ndar
         ax.tick_params(labelsize=10)
         ax.ticklabel_format(style='sci', axis='x', scilimits=(0, 0), useMathText=True)
         ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), useMathText=True)
-        ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=np.floor(len(easting)/6)))
-        ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=np.floor(len(northing)/6)))
-        ax.tick_params(axis='x', labelrotation=25, pad=-6)
-        ax.tick_params(axis='y', labelrotation=-25, pad=-6)
         ax.set_xlim([X.min(), X.max()])
         ax.set_ylim([Y.min(), Y.max()])
 
         # Save Figure
         fig4.savefig(plots_path / "Fig4_3D_watershed_mask_stream_network.png", dpi=300, transparent=False)
-        plt.close(fig4)
+        if not display_plots:
+            plt.close(fig4)
+
+    # display plots if requested
+    if display_plots:
+        plt.show()
 
     return mask, flowacc, flowdir, slope, stream_rows, stream_cols
 
@@ -1006,7 +1008,7 @@ def process_met_file(df: pd.DataFrame, gage_elev: float, dt: float = 0.25, file_
 def MOD_WET_watershed_preprocessing(easting: np.ndarray, northing: np.ndarray, elev: np.ndarray, outlet_coordinate: np.ndarray,
                                     static_data_file: str | Path,
                                     terrain_flag: bool = True, delineation_flag: bool = True, slope_aspect_flag: bool = True, shade_calc_flag: bool = True,
-                                    develop_plots: Optional[bool] = False, plots_path: Optional[str | Path] = None, 
+                                    develop_plots: Optional[bool] = False, display_plots: Optional[bool] = False, plots_path: Optional[str | Path] = None,
                                     met_data: Optional[pd.DataFrame] = None, gage_elev: Optional[float] = None, met_data_file: Optional[str | Path] = None,
                                     dt_interp: Optional[float] = 0.25
                                     ) -> None:
@@ -1056,6 +1058,8 @@ def MOD_WET_watershed_preprocessing(easting: np.ndarray, northing: np.ndarray, e
     Watershed Delineation Plotting Options:
         develop_plots: 
             boolean, if True, develop and save plots to plot_path
+        display_plots: 
+            boolean, if True, displays plots to screen (develop_plots must be set to True)
         plots_path: 
             location to save watershed delineation plots
 
@@ -1135,7 +1139,7 @@ def MOD_WET_watershed_preprocessing(easting: np.ndarray, northing: np.ndarray, e
 
     # input inspection
     inspect_DEM_data(easting, northing, elev, outlet_coordinate)
-    inspect_plot_option(develop_plots, plots_path)
+    inspect_plot_option(develop_plots, plots_path, display_plots)
     inspect_paths(static_data_file, met_data_file)
     inspect_met(met_data, dt_interp, gage_elev, met_data_file)
 
@@ -1152,7 +1156,7 @@ def MOD_WET_watershed_preprocessing(easting: np.ndarray, northing: np.ndarray, e
             print("Performing stream delineation...")
             percent_basin_area = 0.01
             mask, flowacc, flowdir, slope_delin, stream_rows, stream_cols = watershed_area_and_stream_delineation(
-                easting, northing, elev, outlet_coordinate, percent_basin_area, develop_plots, plots_path
+                easting, northing, elev, outlet_coordinate, percent_basin_area, develop_plots, display_plots, plots_path
             )
             # Convert flowdir to COO format
             flowdir = flowdir.tocoo()
@@ -1169,8 +1173,8 @@ def MOD_WET_watershed_preprocessing(easting: np.ndarray, northing: np.ndarray, e
             slope, aspect = None, None
 
         # Call shade lookup table and SVF function
-        print("Building shade lookup table...")
         if shade_calc_flag:
+            print("Building shade lookup table...")
             print("Creating shade lookup table and calculating sky view factor (SVF) map ...")
             shade_lookup_table, SVF, discrete_zenith_values, discrete_azimuth_values = compute_shade_lookup_table_and_SVF(
                 easting, northing, elev, slope, aspect
@@ -1273,7 +1277,7 @@ def inspect_DEM_data(easting, northing, elev, oc):
     if (oc[0] < east_min) or (oc[0] > east_max) or (oc[1] < north_min) or (oc[1] > north_max):
         sys.exit("Error: Outlet coordinate not contained within DEM grid. Coordinate should be (easting, northing).")
 
-def inspect_plot_option(develop_plots, plots_path):
+def inspect_plot_option(develop_plots, plots_path, display_plots):
     if develop_plots:
         if plots_path is not None:
             if isinstance(plots_path, (str, Path)):
@@ -1281,6 +1285,9 @@ def inspect_plot_option(develop_plots, plots_path):
             plots_path.mkdir(parents=True, exist_ok=True)
         else:
             sys.exit("Invalid or missing plots_path")
+    else:
+        if display_plots:
+            sys.exit("To display plots, develop_plots must be set to True.")
 
 def inspect_paths(static_data_file, met_data_file):
     # Static data output inspection
