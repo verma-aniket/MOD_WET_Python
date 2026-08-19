@@ -15,7 +15,7 @@ from src.chapter1 import MOD_WET_watershed_preprocessing
 from src.model_driver import MODWETModel
 
 # Setup
-watershed_name = "bear_creek" # used to define folder names and point to model input and output locations
+watershed_name = "test_basin" # used to define folder names and point to model input and output locations
 
 ### Part A: Preprocess Raw Input Data
 
@@ -43,18 +43,18 @@ MOD_WET_watershed_preprocessing(easting=easting, northing=northing, elev=elev, o
                                 met_data_file=met_forcing_path, shade_calc_flag=False, 
                                 develop_plots=False, display_plots=False, plots_path=plots_path)
 
-# ### Part B: Run MOD-WET Model
+### Part B: Run MOD-WET Model
 
-# # B1. Define input and output file paths
-# output_filepath = REPO_ROOT / f"data/model_output/{watershed_name}/simulation_results.nc"
+# B1. Define input and output file paths
+output_filepath = REPO_ROOT / f"data/model_output/{watershed_name}/simulation_results.nc"
 
-# # B2. Initialize the model
-# print("Initializing MOD-WET model...")
-# model = MODWETModel(basin_data_path=basin_data_path, met_forcing_path=met_forcing_path)
+# B2. Initialize the model
+print("Initializing MOD-WET model...")
+model = MODWETModel(basin_data_path=basin_data_path, met_forcing_path=met_forcing_path)
 
-# # B3. Execute full simulation and export NetCDF results
-# print("Starting simulation run...")
-# model.run_simulation(output_filepath=output_filepath)
-# print(f"\nSimulation run and export completed successfully!")
+# B3. Execute full simulation and export NetCDF results
+print("Starting simulation run...")
+model.run_simulation(output_filepath=output_filepath)
+print(f"\nSimulation run and export completed successfully!")
 
 # End of Script
