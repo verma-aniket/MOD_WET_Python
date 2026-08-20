@@ -22,7 +22,6 @@ def save_simulation_results_netcdf(model, output_path: str | Path) -> None:
     time_fluxes = first_date + (time_fluxes_val * 86400).astype("timedelta64[s]")
     # time_maps = first_date + (time_maps_val * 86400).astype("timedelta64[s]") 
     time_maps = first_date + (np.arange(0,model.map_outputs.n_map)).astype("timedelta64[D]")
-    print(time_maps)
 
     # 2. Extract Spatial Coordinates
     northing = (
