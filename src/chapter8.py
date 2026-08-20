@@ -189,8 +189,8 @@ def soil_SEB_solver_prognostic(
     Tsurf = Ts0 + dt * (CT * G - 2.0 * np.pi * omega * (Ts0 - Td0)) * 3600.0
     Td = Td0 + dt * (omega * (Ts0 - Td0)) * 3600.0
 
-    # Safety Guard: Prevent explicit Euler overshoots relative to air temp
-    Tsurf = np.clip(Tsurf, Ta - 25.0, Ta + 25.0)
+    # # Safety Guard: Prevent explicit Euler overshoots relative to air temp
+    # Tsurf = np.clip(Tsurf, Ta - 25.0, Ta + 25.0)
 
     return Tsurf, LE, H, G, Rn, Td, LWup
 

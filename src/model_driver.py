@@ -1,14 +1,11 @@
 # import base libraries
-import sys
 from pathlib import Path
 from tqdm import tqdm
+from typing import Optional
 
 # To Do:
-# 1. update script to accept elapsed days instead of doy days
-# 2. save output with time encoding based on input data time stamps
-# 3. Once switched to elapsed days, need to correct DOY value in met_forcing.py, simply add one to convert elapsed days to DOY
-# 4. Test stream_pixels functionality
-# 5. Add special_pixels functionality script
+# 1. Test stream_pixels functionality
+# 2. Add special_pixels functionality script
 
 # import data containers & setup routines
 from src.model_setup.data_classes import (
@@ -33,7 +30,8 @@ from src.physics_engine.update_step import step_update_state_and_maps
 class MODWETModel:
     """Modular Distributed Watershed Educational Toolbox (MOD-WET) Python Driver."""
 
-    def __init__(self, basin_data_path: str | Path, met_forcing_path: str | Path, constants_path: str | Path | None = None):
+    def __init__(self, basin_data_path: str | Path, met_forcing_path: str | Path, 
+                 constants_path: Optional[str | Path] = None, parameters_path: Optional[str | Path] = None):
         """Load model constants, basin static data, and meteorological forcing data.
 
         Parameters
@@ -44,17 +42,24 @@ class MODWETModel:
             Path to the NetCDF file containing meteorological forcing data.
         constants_path : str | Path
             Path to the CSV file containing physical scalar constants. 
-            Default is None, in which case, a CSV file is used to set the physical constants.
+            Default is None, if valid path is provided, a CSV file is used to set the physical constants.
+        parameters_path : str | Path
+            Path to the CSV file containing model parameters. 
+            Default is None, if valid path is provided, a CSV file is used to set the physical constants.
         """
         
         # 1. Instantiate model variable containers
-        self.constants = PhysicalConstants()
+        self.constants = PhysicalConstants.load(csv_path=constants_path)
         self.control = ControlParameters()
-        self.params = ModelParameters()
+        self.params = ModelParameters.load(csv_path=parameters_path)
         self.spatial = SpatialMaps()
         self.network = NetworkTopology()
         self.shade = ShadeLookupTable()
         self.forcing = MetForcingData()
+
+        print(self.constants.rhow)
+        print(self.params.T0)
+        print(self.params.K0)
 
         # 2. Load in data from NetCDF files
         self._load_data(basin_data_path, met_forcing_path)
@@ -66,7 +71,7 @@ class MODWETModel:
         self.state = ModelState(nx=self.control.nx, ny=self.control.ny)
         self.step_vars = StepVariables(nx=self.control.nx, ny=self.control.ny)
         self.accumulators = Accumulators(nx=self.control.nx, ny=self.control.ny)
-        self.map_outputs = MapOutputs(n_days=self.control.n_days, nx=self.control.nx, ny=self.control.ny)
+        self.map_outputs = MapOutputs(n_map=self.control.n_map, nx=self.control.nx, ny=self.control.ny)
         self.time_series = TimeSeriesOutputs(nt=self.control.nt, nx=self.control.nx, ny=self.control.ny)
 
         # 5. Initialize state values

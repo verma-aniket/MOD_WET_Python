@@ -50,6 +50,10 @@ output_filepath = REPO_ROOT / f"data/model_output/{watershed_name}/simulation_re
 
 # B2. Initialize the model
 print("Initializing MOD-WET model...")
+# # optional paths to physical constants and model parameters files
+# constants_path = REPO_ROOT / "data/physical_constants.csv"
+# parameters_path = REPO_ROOT / "data/model_parameters.csv"
+
 model = MODWETModel(basin_data_path=basin_data_path, met_forcing_path=met_forcing_path)
 
 # B3. Execute full simulation and export NetCDF results

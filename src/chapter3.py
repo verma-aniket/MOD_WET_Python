@@ -1,7 +1,67 @@
 import numpy as np
 from tqdm import tqdm
+from typing import Tuple, Union, Optional
 
 from src.chapter2 import Wp_from_near_surface_met_data
+
+def clear_sky_shortwave_radiation(
+    RsTOA: Union[float, np.ndarray],
+    zenith_rad: Union[float, np.ndarray],
+    Wp: Union[float, np.ndarray],
+    gamma_dust: float,
+    albedo: Union[float, np.ndarray],
+    surface_pressure: Union[float, np.ndarray],
+    model_name: str,
+) -> Union[float, np.ndarray]:
+    """Computes clear-sky downward shortwave radiation (W/m^2) at the surface.
+
+    Args:
+        RsTOA: Top-of-atmosphere shortwave solar flux (W/m^2)
+        zenith_rad: Solar zenith angle (radians)
+        Wp: Precipitable water (cm)
+        gamma_dust: Nondimensional dust coefficient (used in Dingman model)
+        albedo: Surface albedo (-)
+        surface_pressure: Surface atmospheric pressure (Pa)
+        model_name: Model selection string ('dingman' or 'crawford')
+
+    Returns:
+        Union[float, np.ndarray]: Downwelling clear-sky shortwave radiation (W/m^2)
+    """
+    model = model_name.lower()
+
+    if model == "dingman":
+        # Optical thickness / air mass
+        Mopt = optical_depth(zenith_rad)
+
+        # Direct transmissivity and diffuse scattering coefficient
+        t_s = direct_sw_transmissivity(Wp, gamma_dust, Mopt)
+        beta = diffuse_sw_scattering_coefficient(Wp, gamma_dust, Mopt)
+
+        attenuation_factor = (
+            t_s + beta + beta * albedo * t_s + (beta**2) * albedo
+        )
+        return RsTOA * attenuation_factor
+
+    elif model == "crawford":
+        cos_z = np.cos(zenith_rad)
+
+        # Optical air mass
+        m = 35.0 * cos_z * (1224.0 * (cos_z**2) + 1.0) ** (-0.5)
+
+        # Convert surface pressure from Pa to kPa
+        p_kPa = surface_pressure / 1000.0
+
+        # Transmission coefficients for Rayleigh scattering, water vapor, and aerosols
+        tau_R_tau_pg = 1.021 - 0.084 * np.sqrt(m * (0.00949 * p_kPa + 0.051))
+        tau_w = 1.0 - 0.077 * np.power(Wp * m, 0.3)
+        tau_a = np.power(0.935, m)
+
+        return RsTOA * tau_R_tau_pg * tau_w * tau_a
+
+    else:
+        raise ValueError(
+            f"Unsupported clear-sky shortwave model: '{model_name}'. Expected 'dingman' or 'crawford'."
+        )
 
 def clear_sky_emiss(e: np.ndarray, T: np.ndarray, model_name: str, T_0: float, e_s0: float, Lv: float, Rv: float) -> np.ndarray:
     """Computes clear-sky atmospheric emissivity.
@@ -163,6 +223,28 @@ def compute_shade_lookup_table_and_SVF(easting: np.ndarray, northing: np.ndarray
 
     return shade_lookup_table, SVF, discrete_zenith_values, discrete_azimuth_values
 
+def diffuse_sw_scattering_coefficient(
+    Wp: Union[float, np.ndarray],
+    gamma_dust: float,
+    Mopt: Union[float, np.ndarray],
+) -> Union[float, np.ndarray]:
+    """Computes diffuse beam shortwave scattering coefficient (-) via Dingman model."""
+    a_s = -0.0363 - 0.0084 * Wp
+    b_s = -0.0572 - 0.0173 * Wp
+    tau_s = np.exp(a_s + b_s * Mopt)
+    return 0.5 * (1.0 - tau_s + gamma_dust)
+
+def direct_sw_transmissivity(
+    Wp: Union[float, np.ndarray],
+    gamma_dust: float,
+    Mopt: Union[float, np.ndarray],
+) -> Union[float, np.ndarray]:
+    """Computes direct beam shortwave transmissivity (-) via Dingman model."""
+    a_sa = -0.124 - 0.0207 * Wp
+    b_sa = -0.0682 - 0.0248 * Wp
+    tau_sa = np.exp(a_sa + b_sa * Mopt)
+    return tau_sa - gamma_dust
+
 def generate_slope_and_aspect_from_DEM(elev: np.ndarray, easting: np.ndarray, northing: np.ndarray
                                        ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -256,6 +338,12 @@ def generate_slope_and_aspect_from_DEM(elev: np.ndarray, easting: np.ndarray, no
         aspect = np.fliplr(aspect)
 
     return slope, aspect
+
+def optical_depth(
+    zenith_rad: Union[float, np.ndarray]
+) -> Union[float, np.ndarray]:
+    """Computes atmospheric optical depth mass from solar zenith angle (radians)."""
+    return 1.0 / np.cos(zenith_rad)
 
 def topo_shade_calc(saltitude: float, sazimuth: float, easting: np.ndarray, northing: np.ndarray, elev: np.ndarray
                     ) -> np.ndarray:

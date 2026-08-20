@@ -945,9 +945,11 @@ def process_met_file(df: pd.DataFrame, gage_elev: float, dt: float = 0.25, file_
         num_days = 366
     else:
         num_days = 365
-    required_length = int((num_days * 24) // dt_orig)
-    if len(df) != required_length:
-        sys.exit(f"Meteorological data must span exactly one year. Given data {dt_orig} hours apart, in water year {water_year}, there should be {required_length} data points.")
+    # Update: Remove requirement that forcing data should be exactly 1 year
+    #         model number of time steps will be based on length of preprocessed meteorological data record
+    # required_length = int((num_days * 24) // dt_orig)
+    # if len(df) != required_length:
+    #     sys.exit(f"Meteorological data must span exactly one year. Given data {dt_orig} hours apart, in water year {water_year}, there should be {required_length} data points.")
 
     # Build interpolation x-values
     t_new = np.arange(0, num_days, dt / 24)
@@ -966,7 +968,6 @@ def process_met_file(df: pd.DataFrame, gage_elev: float, dt: float = 0.25, file_
     first_date_string = f"{first_year:04d}-{first_month:02d}-{first_day:02d} {first_hour:02d}:{first_minute:02d}:{first_second:02d}"
     start_date = pd.Timestamp(first_date_string)
     datetime_vector = start_date + pd.to_timedelta(t_new, unit="D").round("s")
-    elapsed_days = t_new
     doy = datetime_vector.day_of_year + (datetime_vector.hour / 24 + datetime_vector.minute / 1440 + datetime_vector.second / 86400)
 
     # build to xarray Dataset

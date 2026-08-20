@@ -555,12 +555,12 @@ def snow_model(
     # Aerodynamic resistance (s/m) -- Assumes neutral conditions
     # check for near-zero (less than 0.5 m/s) windspeed and set to low, but
     # positive value
-    wind_calc = np.copy(wind)
-    wind_calc[wind_calc < 0.5] = 0.5  # m/s
-    ra = aero_resistance(z_snow, h_snow, wind_calc, kappa=kappa)
+    # wind_calc = np.copy(wind)
+    # wind_calc[wind_calc < 0.5] = 0.5  # m/s
+    ra = aero_resistance(z_snow, h_snow, wind, kappa=kappa)
     
     # Stability corrections
-    RiB = richardson_number(z=z_snow, Tair=Ta, U=wind_calc, Tsurf=Tsnow0, g=g)
+    RiB = richardson_number(z=z_snow, Tair=Ta, U=wind, Tsurf=Tsnow0, g=g)
     phi_m, phi_h = stab_corr_factors(RiB)
     ra = ra * phi_m * phi_h
 
@@ -609,10 +609,10 @@ def snow_model(
     # ENERGY BALANCE equation --> Surface temperature update (K)
     Tsnow_map = Tsnow0 + dt * (Rn - LE - H + advec_energy + latent_energy) / (ci * dummySWE * rhow) * (sec2hr * mm2m)
 
-    # Safety Guard: Snow surface temperature physically cannot exceed freezing (T_f)
-    #               Also, set lower bound relative to air temp to prevent explicit Euler overshoots
-    # This is identical to the lower bound in the surface energy balance (SEB) portion of the simulation model 
-    Tsnow_map = np.clip(Tsnow_map, Ta - 25.0, T_f)
+    # # Safety Guard: Snow surface temperature physically cannot exceed freezing (T_f)
+    # #               Also, set lower bound relative to air temp to prevent explicit Euler overshoots
+    # # This is identical to the lower bound in the surface energy balance (SEB) portion of the simulation model 
+    # Tsnow_map = np.clip(Tsnow_map, Ta - 25.0, T_f)
 
     # Check for phase change
     melt_mask = (Tsnow_map >= T_f) & (SWE0 > 0.0)

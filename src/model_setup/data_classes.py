@@ -1,5 +1,7 @@
-from dataclasses import dataclass, field
-from typing import Sequence, Tuple
+from dataclasses import dataclass, field, fields
+from pathlib import Path
+from typing import Sequence, Tuple, Optional
+import csv
 import numpy as np
 import scipy.sparse as sp
 
@@ -82,6 +84,37 @@ class PhysicalConstants:
     T_f: float = 273.15                                     # Water freezing temp.(K)
     gamma_d: float = 9.800                                  # dry adiabatic lapse rate (K/km)
 
+    @classmethod
+    def load(cls, csv_path: Optional[str | Path] = None) -> "PhysicalConstants":
+        """
+        Instantiates PhysicalConstants using default values unless a valid CSV path 
+        is provided to override specified parameters.
+        """
+        if csv_path is None:
+            return cls()
+
+        path = Path(csv_path)
+        if path.exists():
+            print(f"Warning: File '{csv_path}' will be used to override default physical constants.")
+
+            # Retrieve valid attribute names from the dataclass
+            valid_fields = {f.name for f in fields(cls)}
+            overrides = {}
+
+            with open(path, mode="r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    key = row["key"].strip()
+                    val_str = row["value"].strip()
+                    if key in valid_fields and val_str:
+                        overrides[key] = float(val_str)
+
+            # Unpack CSV overrides over default dataclass values
+            return cls(**overrides)
+        else:
+            print(f"Warning: File '{csv_path}' not found. Using default physical constants.")
+            return cls()
+
 @dataclass
 class ModelParameters:
     """Scalar model parameters, configuration settings, and basin-wide properties."""
@@ -150,6 +183,51 @@ class ModelParameters:
     def K0(self) -> float:
         """Surface saturated hydraulic conductivity (m/hour)."""
         return self.T0 / self.m  #
+
+    @classmethod
+    def load(cls, csv_path: Optional[str | Path] = None) -> "ModelParameters":
+        """
+        Instantiates ModelParameters using default values unless a CSV path is provided.
+        Only variables present in the CSV will override the class defaults.
+        """
+        if csv_path is None:
+            return cls()
+
+        path = Path(csv_path)
+        if path.exists():
+            print(f"Warning: File '{csv_path}' will be used to override default model parameters.")
+
+            field_map = {f.name: f for f in fields(cls)}
+            overrides = {}
+
+            with open(path, mode="r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    key = row["key"].strip()
+                    val_str = row["value"].strip()
+
+                    if key not in field_map:
+                        continue
+
+                    # Parse empty/None entries
+                    if val_str == "" or val_str.lower() == "none":
+                        overrides[key] = None
+                        continue
+
+                    # Convert values according to field types
+                    field_type = field_map[key].type
+                    if field_type is str or "str" in str(field_type):
+                        overrides[key] = val_str
+                    else:
+                        try:
+                            overrides[key] = float(val_str)
+                        except ValueError:
+                            overrides[key] = val_str
+
+            return cls(**overrides)
+        else:
+            print(f"Warning: File '{csv_path}' not found. Using default model parameters.")
+            return cls()
 
 @dataclass
 class SpatialMaps:
@@ -303,8 +381,8 @@ class StepVariables:
     Srz_new: np.ndarray = field(init=False)                 # Rootzone storage at end of time step (m)
     Suz_new: np.ndarray = field(init=False)                 # Unsaturated zone storage at end of time step (m)
     SD_new: np.ndarray = field(init=False)                  # Storage deficit at end of time step (m)
-    qv: np.ndarray = field(init=False)                      # Recharge flux (m)
-    qb: np.ndarray = field(init=False)                      # Baseflow (m^2/hr)
+    qv_new: np.ndarray = field(init=False)                  # Recharge flux (m)
+    qb_new: np.ndarray = field(init=False)                  # Baseflow (m^2/hr)
     qse_new: np.ndarray = field(init=False)                 # Saturation excess runoff (m)
     Qv: float = field(init=False)                           # Total basin-averaged (recharge) flux to groundwater (m)
     Qb: float = field(init=False)                           # Total basin-averaged baseflow (m)
@@ -381,13 +459,13 @@ class Accumulators:
 
 @dataclass
 class MapOutputs:
-    """Historical daily 3D spatial grids (n_days, nx, ny) stored for analysis and export."""
+    """Historical daily 3D spatial grids (n_map, nx, ny) stored for analysis and export."""
 
-    n_days: int
+    n_map: int
     nx: int
     ny: int
 
-    # State Daily Maps (3D: n_days x nx x ny)
+    # State Daily Maps (3D: n_map x nx x ny)
     Srz: np.ndarray = field(init=False)                     # Daily rootzone soil moisture (m)
     Suz: np.ndarray = field(init=False)                     # Daily unsaturated zone storage (m)
     SD: np.ndarray = field(init=False)                      # Daily saturation deficit (m)
@@ -398,7 +476,7 @@ class MapOutputs:
     snowfrac: np.ndarray = field(init=False)                # Daily snow cover fraction (-)
     Td: np.ndarray = field(init=False)                      # Daily deep soil temperature (K)
 
-    # Flux Daily Maps (3D: n_days x nx x ny)
+    # Flux Daily Maps (3D: n_map x nx x ny)
     snowmelt: np.ndarray = field(init=False)                # Daily snowmelt (m)
     Rn: np.ndarray = field(init=False)                      # Daily net radiation (W/m^2)
     LE: np.ndarray = field(init=False)                      # Daily latent heat flux (W/m^2)
@@ -411,7 +489,7 @@ class MapOutputs:
     infil: np.ndarray = field(init=False)                   # Daily infiltration (m)
     Rlup: np.ndarray = field(init=False)                    # Daily upwelling longwave radiation (W/m^2)
 
-    # Disaggregated Forcing Daily Maps (3D: n_days x nx x ny)
+    # Disaggregated Forcing Daily Maps (3D: n_map x nx x ny)
     Tair: np.ndarray = field(init=False)                    # Daily air temperature (K)
     albedo: np.ndarray = field(init=False)                  # Daily surface albedo (-)
     Rldown: np.ndarray = field(init=False)                  # Daily downwelling longwave radiation (W/m^2)
@@ -424,9 +502,9 @@ class MapOutputs:
     NDayLastSnow: np.ndarray = field(init=False)            # Days since last major snowfall (-)
 
     def __post_init__(self) -> None:
-        shape = (self.n_days, self.nx, self.ny)
+        shape = (self.n_map, self.nx, self.ny)
         for name in self.__dataclass_fields__:
-            if name not in ("n_days", "nx", "ny"):
+            if name not in ("n_map", "nx", "ny"):
                 setattr(self, name, np.full(shape, np.nan, dtype=np.float64))
 
 @dataclass

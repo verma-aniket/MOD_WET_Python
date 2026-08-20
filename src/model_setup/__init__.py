@@ -11,6 +11,7 @@ from .initialize_model import (
 def set_static_physical_parameters(model) -> None:
     """Orchestrate all derived static calculations across domain submodules."""
     # Order matters: terrain establishes maskNaN used by downstream modules
+    adjust_run_time(model)
     derive_terrain_maps(model)
     derive_soil_properties(model)
     derive_channel_properties(model)
@@ -21,3 +22,13 @@ def initialize_dynamic_model_states(model) -> None:
     record_initial_conditions_time_series(model)
     get_solar_index(model)
     # record_special_pixel_initial_conditions(model)
+
+def adjust_run_time(model) -> None:
+    # New Feature: Adjust model number of time steps (and time series and map record length)
+    # based on length of meteorological record length
+    len_forcing_data = model.forcing.time.shape[0]
+    # only change control parameters if meteorologcal data record is not 365 days long
+    if len_forcing_data != model.control.ntime:
+        model.control.ntime = len_forcing_data
+        model.control.nt = int(model.control.ntime // model.control.timeseries_frq2store)
+        model.control.n_map = int(model.control.ntime // model.control.map_frq2store)

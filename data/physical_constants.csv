@@ -1,0 +1,22 @@
+key,value,units,description
+cp,1004.0,J/kg/K,Specific heat capacity of air
+rhow,1000.0,kg/m^3,Density of water
+rhoi,917.0,kg/m^3,Density of ice
+ci,2102.0,J/kg/K,Specific heat capacity of ice
+cw,4216.0,J/kg/K,Specific heat capacity of water
+Rd,287,J/kg/K,Ideal gas constant of dry air
+Rv,461,J/kg/K,Ideal gas constant of water vapor
+epsilon,0.622,-,Rd/Rv ratio
+e_s0,611,Pa,Reference saturated vapor pressure in Clausius-Clapeyron Equation
+T_0,273.15,K,Reference temperature in Clausius-Clapeyron Equation
+Lv,2.5e6,J/kg,Latent heat of vaporization
+Lf,3.34e5,J/kg,Latent heat of fusion
+Ls,2.83e6,J/kg,Latent heat of sublimation
+g,9.81,m/s^2,Acceleration of gravity
+S0,1367,W/m^2,Solar constant
+SB_const,5.67e-8,W/m^2/K^4,Stefan-Boltzmann constant
+kappa,0.4,-,Von Karman constant
+N0,0.08,cm^-4,Marshall-Palmer parameter
+gamma,64.6,Pa/K,Psychrometric constant
+T_f,273.15,K,Water freezing temperature
+gamma_d,9.800,K/km,Dry adiabatic lapse rate
