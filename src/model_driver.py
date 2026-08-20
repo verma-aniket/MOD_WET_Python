@@ -57,10 +57,6 @@ class MODWETModel:
         self.shade = ShadeLookupTable()
         self.forcing = MetForcingData()
 
-        print(self.constants.rhow)
-        print(self.params.T0)
-        print(self.params.K0)
-
         # 2. Load in data from NetCDF files
         self._load_data(basin_data_path, met_forcing_path)
 
