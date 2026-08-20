@@ -13,7 +13,7 @@ def save_simulation_results_netcdf(model, output_path: str | Path) -> None:
     end_day = model.control.start_day + model.control.n_days
     time_states_val = np.linspace(model.control.start_day, end_day, model.control.nt + 1, dtype=np.float32)
     time_fluxes_val = np.linspace(model.control.start_day, end_day, model.control.nt, dtype=np.float32)
-    time_maps_val = np.linspace(model.control.start_day, end_day, model.map_outputs.n_days, dtype=np.float32)
+    time_maps_val = np.linspace(model.control.start_day, end_day, model.map_outputs.n_map, dtype=np.float32)
 
     # Convert time coordinates to time stamps
     first_date_string = model.forcing.start_date_time

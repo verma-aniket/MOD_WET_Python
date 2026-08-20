@@ -12,7 +12,7 @@ def step_update_state_and_maps(model, step_idx: int, map_t_idx: int):
     step_idx : int
         Current 0-indexed timestep iteration.
     map_t_idx : int
-        Current 0-indexed array index for MapOutputs (n_days dimension).
+        Current 0-indexed array index for MapOutputs (n_map dimension).
     """
     # Update state variables for next time step
     model.state.Tsurf = model.step_vars.Tsurf_new.copy()
@@ -29,7 +29,7 @@ def step_update_state_and_maps(model, step_idx: int, map_t_idx: int):
     # Convert 0-indexed step_idx to 1-based step number for modulo check
     if (step_idx + 1) % model.control.map_frq2store == 0:
         denom = float(model.control.map_frq2store)
-        idx = map_t_idx  # Slot index in MapOutputs 3D arrays (n_days, nx, ny)
+        idx = map_t_idx  # Slot index in MapOutputs 3D arrays (n_map, nx, ny)
 
         # --- Time-Averaged States ---
         model.map_outputs.Srz[idx] = model.accumulators.cumulSrz / denom
