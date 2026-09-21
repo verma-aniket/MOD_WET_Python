@@ -220,12 +220,12 @@ def save_simulation_results_netcdf(model, output_path: str | Path) -> None:
         data_vars["flowdir_row"] = (
             ("nnz",),
             flowdir_coo.row,
-            {"units": "-", "long_name": "Sparse matrix non-zero row indices in Fortran order (row-major)"},
+            {"units": "-", "long_name": "Sparse matrix non-zero row indices in Fortran order"},
         )
         data_vars["flowdir_col"] = (
             ("nnz",),
             flowdir_coo.col,
-            {"units": "-", "long_name": "Sparse matrix non-zero column indices in Fortran order (row-major)"},
+            {"units": "-", "long_name": "Sparse matrix non-zero column indices in Fortran order"},
         )
 
     # process Iupstream, Idownstream, Ioutlet arrays and save as 1D arrays

@@ -61,8 +61,8 @@ def evaluate_simulation(output_filepath: str | Path, plots_path: str | Path,
     water_year = time_map[-1].astype('datetime64[Y]').astype(int) + 1970
 
     # extract static data
-    dx = ds.dx                                      # m
-    dy = ds.dy                                      # m
+    dx = ds.dx_m                                    # m
+    dy = ds.dy_m                                    # m
     basin_area = ds.basin_area_m2;                  # m^2
     basin_area_km2 = basin_area / 1000 / 1000;      # km^2
 
